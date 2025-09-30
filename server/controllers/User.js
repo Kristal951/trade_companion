@@ -1,47 +1,65 @@
 import bcrypt from "bcryptjs"; // or 'bcrypt' if using native
-import User from "../models/User.js";
+import { User, RegularUser } from "../models/User.js";
 import {
   generateVerificationToken,
   sendVerificationEmail,
   verifyGoogleToken,
 } from "../utils/index.js";
 import jwt from "jsonwebtoken";
-import { OAuth2Client } from "google-auth-library";
-/**
- * @desc Sign up a new user
- * @route POST /api/users/signup
- * @access Public
- */
 
 export const SignUpUser = async (req, res) => {
   try {
     const { name, email, password, age } = req.body;
-
-    if (!name || !email || !password || !age) {
-      return res.status(400).json({ message: "All fields are required" });
+     const type = 'user'
+    // Todo: implement user Type
+    if (!name || !email || !password || !age || !type) {
+      console.log("err");
+      return res.status(400).json({ error: "All fields are required" });
     }
 
+    if (age < 18) {
+      return res.status(400).json({
+        error: "You must be at least 18 years old to register",
+      });
+    }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "Email already in use, please use another email." });
+      return res.status(400).json({
+        error: "Email already in use, please use another email.",
+      });
     }
-    const image = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
+
+    const image = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      name
+    )}&background=random`;
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const passWordSalt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, passWordSalt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({
-      name,
-      email,
-      image,
-      emailVerified: false,
-      IsGoogle: false,
-      password: hashedPassword,
-      age,
-    });
+    let newUser;
+
+    if (type === "mentor") {
+      newUser = new Mentor({
+        name,
+        email,
+        image,
+        emailVerified: false,
+        IsGoogle: false,
+        password: hashedPassword,
+        age,
+      });
+    } else {
+      newUser = new RegularUser({
+        name,
+        email,
+        image,
+        emailVerified: false,
+        IsGoogle: false,
+        password: hashedPassword,
+        age,
+      });
+    }
 
     await newUser.save();
 
@@ -50,30 +68,40 @@ export const SignUpUser = async (req, res) => {
       code,
       userID: newUser._id.toString(),
     });
-    console.log(token);
 
     await sendVerificationEmail({ to: email, name, code });
 
     res.cookie("tradecompanion_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 1000,
+      maxAge: 60 * 60 * 1000, // 1 hour
       sameSite: "strict",
     });
 
+    const safeUser = {
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      image: newUser.image,
+      age: newUser.age,
+      type: newUser.type,
+      emailVerified: newUser.emailVerified,
+      plan: newUser.plan,
+    };
+
     res.status(201).json({
-      message: "User created successfully",
-      newUser,
+     success: true,
+      user: safeUser,
     });
   } catch (error) {
     console.error("Error during user registration:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 export const verify_email_code = async (req, res) => {
   const { code } = req.body;
-  const token = req.cookies.tradecompanion_token; 
+  const token = req.cookies.tradecompanion_token;
 
   if (!code || !token) {
     return res
@@ -177,13 +205,7 @@ export const SignInUserWithGoogle = async (req, res) => {
       return res.status(401).json({ message: "Invalid Google token" });
     }
 
-    const {
-      email,
-      name,
-      email_verified,
-      sub,      
-      picture,
-    } = payload;
+    const { email, name, email_verified, sub, picture } = payload;
 
     if (!email_verified) {
       res.status(400).json({ message: "Google email not verified" });
@@ -197,14 +219,17 @@ export const SignInUserWithGoogle = async (req, res) => {
         name,
         email,
         IsGoogle: true,
-        image: picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
+        image:
+          picture ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            name
+          )}&background=random`,
         password: hashedPassword,
         age: 18,
         emailVerified: email_verified,
       });
       await user.save();
-    }
-    else if (!user.IsGoogle) {
+    } else if (!user.IsGoogle) {
       return res.status(400).json({
         message: "This email is already registered with a different method",
       });
@@ -228,9 +253,10 @@ export const SignInUserWithGoogle = async (req, res) => {
       message: "Google Sign-In successful",
       user: userData,
     });
-
   } catch (err) {
     console.error("Google Sign-In Error:", err);
-    return res.status(500).json({ message: "Internal server error during Google Sign-In" });
+    return res
+      .status(500)
+      .json({ message: "Internal server error during Google Sign-In" });
   }
 };

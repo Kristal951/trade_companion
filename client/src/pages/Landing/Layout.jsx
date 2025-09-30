@@ -4,12 +4,14 @@ import Home from "./Index";
 import About from "./About";
 import Features from "./Features";
 import Pricing from "./Pricing";
+import Faqs from "./Faqs";
 
 const Layout = () => {
   const [currentPage, setCurrentPage] = useState("home");
   const sectionRefs = {
     home: useRef(null),
     about: useRef(null),
+    faqs: useRef(null),
     features: useRef(null),
     pricing: useRef(null),
   };
@@ -17,7 +19,7 @@ const Layout = () => {
   useEffect(() => {
     const observerOptions = {
       root: null,
-      threshold: 0.6, // 60% of section in view = active
+      threshold: 0.6,
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -60,6 +62,13 @@ const Layout = () => {
         className="min-h-screen"
       >
         <Features />
+      </section>
+      <section
+        id="faqs"
+        ref={sectionRefs.faqs}
+        className="min-h-screen"
+      >
+        <Faqs />
       </section>
       <section id="pricing" ref={sectionRefs.pricing} className="min-h-screen">
         <Pricing />

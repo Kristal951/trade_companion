@@ -6,33 +6,63 @@ const Backend_Uri = process.env.REACT_APP_BACKEND_URL;
 
 const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       isAuthenticated: false,
       user: null,
       loading: false,
       error: false,
       errorMsg: "",
 
-      signUp: async ({ name, email, password, age }) => {
+      signUp: async ({ name, email, password, age, type }) => {
         set({ loading: true, error: false, errorMsg: "" });
 
         try {
-          await axios.post(
+          const res = await axios.post(
             `${Backend_Uri}/api/user/register`,
-            { name, email, password, age },
+            { name, email, password, age, type },
             { withCredentials: true }
           );
 
-          set({
-            user: null,
-            isAuthenticated: true,
-            error: false,
-            errorMsg: "",
-          });
+          if (res.data.success) {
+            set({
+              user: null,
+              isAuthenticated: true,
+              error: false,
+              errorMsg: "",
+            });
+            return { success: true };
+          }
+        } catch (err) {
+          const message = err.response?.data?.error || err.message;
+          set({ error: true, errorMsg: message });
+          return { success: false, message };
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      handleCheckout: async ({ selectedPlan, paymentMethod, navigate }) => {
+        set({ loading: true, error: false, errorMsg: "" });
+
+        try {
+          const res = await axios.post(
+            `${Backend_Uri}/api/stripe/create-checkout-session`,
+            { selectedPlan, paymentMethod },
+            { withCredentials: true }
+          );
+
+          if (paymentMethod === "stripe") {
+            window.location.href = res.data.url; // redirect to Stripe
+          } else {
+            alert(
+              `Bank Transfer Selected:\n\nSend payment to:\n${res.data.bankDetails.accountName}\n${res.data.bankDetails.bankName}\nAcct: ${res.data.bankDetails.accountNumber}\nRef: ${res.data.bankDetails.reference}`
+            );
+            navigate("/payment-pending");
+          }
 
           return { success: true };
-        } catch (err) {
-          const message = err.response?.data?.message || err.message;
+        } catch (error) {
+          const message = error.response?.data?.message || error.message;
           set({ error: true, errorMsg: message });
           return { success: false, message };
         } finally {
@@ -58,7 +88,7 @@ const useAuthStore = create(
 
           return { success: true };
         } catch (error) {
-          const message = error.response?.data?.message || error.message;
+          const message = error.response?.data?.error || error.message;
           set({ error: true, errorMsg: message });
           return { success: false, message };
         } finally {

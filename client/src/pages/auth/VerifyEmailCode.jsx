@@ -9,9 +9,14 @@ const VerifyEmailCode = () => {
   const inputRefs = useRef([]);
   const navigate = useNavigate();
   const toast = useToast();
-  const { verifyEmailCode, loading } = useAuthStore();
+  const { verifyEmailCode, loading, handleCheckout, error } = useAuthStore();
   const location = useLocation();
   const email = location.state?.email;
+  const selectedPlan = location.state?.selectedPlan || null;
+  const paymentMethod = location.state?.paymentMethod || null;
+  if(selectedPlan && paymentMethod){
+    console.log(selectedPlan, paymentMethod);
+  }
 
   useEffect(() => {
     if (inputRefs.current[0]) {
@@ -21,7 +26,7 @@ const VerifyEmailCode = () => {
 
   useEffect(() => {
     if (!email) {
-      navigate("/signup");
+      navigate("/auth/signup");
       toast({
         title: "Error",
         description: "No email provided for verfication.",
@@ -90,26 +95,27 @@ const VerifyEmailCode = () => {
       position: "top-right",
     });
 
+    if(selectedPlan && paymentMethod === "stripe"){
+      await handleCheckout({selectedPlan, paymentMethod, navigate});
+      return
+    }
+
     navigate("/login");
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-tr from-teal-100 to-white">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm">
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm flex items-center justify-center flex-col p-6">
         {/* <div className="flex w-16 h-16 items-center justify-center mb-4">
           <img src={EmailVerificationImage} alt="" className="w-full h-full" />
         </div> */}
-
-        <h1 className="text-3xl text-teal-500 font-bold mb-4 text-center">
-          Verify Your Email
+        <h1 className="bg-gradient-to-r from-purple-400 via-pink-400 font-heading to-cyan-400 bg-clip-text text-transparent text-4xl w-[500px] font-bold mb-4 text-center">
+          Enter Verification Code
         </h1>
-        <p className="text-teal-400 font-semibold mb-4 text-center">
+        <p className="text-base font-semibold mb-4 text-center">
           {`Enter the 6-digit code we sent to your email: ${email}`}
         </p>
-        <p className="text-teal-400 font-semibold mb-4 text-center">
-          Please Input it below.
-        </p>
-
+       
         <div className="flex justify-center gap-2 my-8">
           {codes.map((code, index) => (
             <input
@@ -120,14 +126,15 @@ const VerifyEmailCode = () => {
               value={code}
               onChange={(e) => handleChange(e.target.value, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
-              className="w-14 h-14 border-teal-300 text-center text-xl border rounded focus:outline-none focus-border-[10px] focus:border-teal-500"
+              className={`w-14 h-14 border-cyan-400 text-center text-xl border rounded focus:outline-none focus-border-[10px] focus:border-cyan-500 transition-all ${error && "border-red-500 focus:border-red-500"}`}
             />
           ))}
         </div>
 
         <button
           type="submit"
-          className="w-full bg-teal-500 text-white py-2 rounded hover:bg-teal-600"
+          className="w-full bg-gradient-to-r from-purple-400 via-pink-400 font-body to-cyan-400 text-white py-2 rounded hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          disabled={!codes.every((code) => code) || loading}
         >
           {loading ? <Spinner size="sm" color="white" /> : "Verify Email"}
         </button>

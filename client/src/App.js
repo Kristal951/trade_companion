@@ -13,6 +13,8 @@ import Home from "./pages/Home";
 import VerifyEmailCode from "./pages/auth/VerifyEmailCode";
 import Layout from "./pages/Landing/Layout";
 import { AnimatePresence } from "framer-motion";
+import PaymentSuccess from "./components/Pricing/PaymentSuccess";
+import PaymentCancelled from "./components/Pricing/PaymentCancelled";
 
 const App = () => {
   const location = useLocation();
@@ -21,12 +23,14 @@ const App = () => {
       <div className="w-full h-screen no-scrollbar">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Layout />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-cancelled" element={<PaymentCancelled />} />
           <Route path="/auth/verify-email" element={<VerifyEmailCode />} />
           <Route path="/auth" element={<AuthLayout />}>
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<SignUp />} />
           </Route>
-          <Route path="/app" element={<RootLayout />}>
+          <Route path="/home" element={<RootLayout />}>
             <Route index element={<Home />} />
           </Route>
         </Routes>

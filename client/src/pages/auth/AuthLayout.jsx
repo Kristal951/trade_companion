@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Typewriter } from "react-simple-typewriter";
 
@@ -56,37 +56,34 @@ const AuthLayout = () => {
     const delay = setTimeout(() => setShowThirdLine(true), 2000);
     return () => clearTimeout(delay);
   }, [pageTitle]);
+  if (location.pathname === "/auth" || location.pathname === "/auth/") {
+    return <Navigate to="/auth/signup" replace />;
+  }
 
   return (
-    <div className="w-full h-screen flex flex-row overflow-hidden">
-      <div className="w-[40%] h-full relative bg-gradient-to-r from-indigo-400 to-cyan-400 flex items-center justify-center overflow-hidden">
-        <motion.div
+    <div className="w-full h-screen flex flex-row relative overflow-hidden">
+      {/* Left Section */}
+      <div className="w-[40%] h-full relative bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-600/30 rounded-full blur-[120px]" />
+          <div className="absolute top-40 -right-32 w-96 h-96 bg-cyan-500/30 rounded-full blur-[120px]" />
+        </div>
+
+        {/* <motion.div
           variants={variants}
           animate="animate"
-          className="w-[300px] h-[300px] bg-cyan-400 absolute top-[-10rem] right-[-4rem]"
+          className="w-[300px] h-[300px] bg-transparent absolute top-[-10rem] right-[-4rem]"
         />
 
         <motion.div
           variants={variants}
           animate="animate"
-          className="w-[300px] h-[300px] bg-indigo-500 bg-opacity-50 rounded-full absolute bottom-[-8rem] left-[-8rem]"
-        />
+          className="w-[300px] h-[300px] bg-transparent bg-opacity-50 rounded-full absolute bottom-[-8rem] left-[-8rem]"
+        /> */}
 
         <div className="flex flex-col items-center justify-center relative text-white text-center px-6">
-          {/* <motion.div
-            variants={borderVariants}
-            animate="animate"
-            className="w-[70px] h-[30px] bg-cyan-400 absolute border-t-[4px] top-0 right-[-1rem] border-r-[4px] border-cyan-300"
-          />
-          <motion.div
-            variants={borderVariants}
-            animate="animate"
-            className="w-[70px] h-[30px] bg-teal-400 absolute border-b-[4px] bottom-[-15px] left-[-1rem] border-l-[4px] border-teal-300"
-          /> */}
-
           <div className="flex flex-col items-center justify-center mb-4">
             <h1 className="text-3xl font-bold">
-              {" "}
               <Typewriter
                 words={["Hello There,"]}
                 typeSpeed={70}
@@ -108,7 +105,6 @@ const AuthLayout = () => {
           )}
         </div>
       </div>
-
       <div className="flex w-[60%] h-full items-center justify-center bg-white">
         <Outlet />
       </div>

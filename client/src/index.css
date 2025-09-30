@@ -6,6 +6,7 @@ body {
   padding: 0;
   margin: 0;
   scrollbar-width: none;
+  font-family: 'Roboto', sans-serif;
 }
 
 /* For Internet Explorer and Edge */
@@ -46,4 +47,8 @@ body::-webkit-scrollbar {
 .no-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;     /* Firefox */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
 }

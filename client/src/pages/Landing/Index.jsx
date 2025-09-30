@@ -2,6 +2,7 @@ import React from "react";
 import IMG from "../../assets/All_PNG/AI.png";
 import Header from "./Header";
 import { Typewriter } from "react-simple-typewriter";
+import { Link } from "react-router-dom";
 
 const Home = ({ currentPage, scrollToSection }) => {
   return (
@@ -31,24 +32,14 @@ const Home = ({ currentPage, scrollToSection }) => {
 
         {/* Buttons */}
         <div className="mt-10 flex gap-4 flex-wrap justify-center">
-          <button className="px-8 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-purple-500/30 hover:scale-105 transition-transform">
+          <Link to="/auth/signup" className="px-8 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-purple-500/30 hover:scale-105 transition-transform">
             Get Started
-          </button>
+          </Link>
 
           <button className="px-8 py-3 rounded-xl font-semibold text-gray-200 border border-gray-600/50 backdrop-blur-sm hover:bg-white/5 hover:border-gray-400 transition">
             Learn More
           </button>
         </div>
-
-        {/* Floating Image */}
-        {/* <div className="mt-16 relative">
-          <img
-            src={IMG}
-            alt="AI Trading"
-            className="w-[320px] md:w-[480px] drop-shadow-2xl"
-          />
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-purple-500/10 to-cyan-500/10 blur-3xl -z-10" />
-        </div> */}
       </div>
     </div>
   );

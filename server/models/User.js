@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 
+// Base User Schema
 const userSchema = new Schema(
   {
     name: {
@@ -7,9 +8,10 @@ const userSchema = new Schema(
       type: String,
       trim: true,
     },
-    image:{
+    image: {
       type: String,
-      default: "https://res.cloudinary.com/dz1qj3x8h/image/upload/v1735681234/default-user.png",
+      default:
+        "https://res.cloudinary.com/dz1qj3x8h/image/upload/v1735681234/default-user.png",
       trim: true,
     },
     email: {
@@ -40,10 +42,58 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    subscription: {
+      type: String,
+      enum: ["free", "premium"],
+      default: "free",
+    },
+    plan: {
+      name: { type: String, enum: ["basic", "plus", "premium"], default: "basic" },
+      planId: { type: String, default: null },
+      method: {
+        type: String,
+        enum: ["stripe", "bank_transfer", null],
+        default: null,
+      },
+      status: {
+        type: String,
+        enum: ["active", "inactive", "canceled", "trialing", null],
+        default: null,
+      },
+      stripeCustomerId: { type: String, default: null },
+      stripeSubscriptionId: { type: String, default: null },
+      bankReference: { type: String, default: null },
+      startDate: { type: Date, default: null },
+      endDate: { type: Date, default: null },
+    },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    discriminatorKey: "type" 
+  }
 );
 
+userSchema.index({ email: 1 });
 const User = model("User", userSchema);
 
-export default User;
+const Mentor = User.discriminator(
+  "Mentor",
+  new Schema({
+    expertise: { type: [String], default: [] }, 
+    experienceYears: { type: Number, default: 0 },
+    bio: { type: String, trim: true },
+    availability: { type: String, enum: ["full-time", "part-time", "hourly"], default: "part-time" },
+    mentees: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  })
+);
+
+const RegularUser = User.discriminator(
+  "RegularUser",
+  new Schema({
+    interests: { type: [String], default: [] }, 
+    goals: { type: String, trim: true },
+    mentor: { type: Schema.Types.ObjectId, ref: "Mentor" },
+  })
+);
+
+export { User, Mentor, RegularUser };
