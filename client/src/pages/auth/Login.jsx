@@ -30,10 +30,10 @@ const Login = () => {
           position: "top-right",
         });
 
-        if (!result.user?.emailVerified) {
-          navigate("/verify-email", { state: { email: result.user.email } });
+        if (!result?.userEmailVerified) {
+          navigate("/auth/verify-email", { state: { email: result.user.email } });
         } else {
-          navigate("/home");
+          navigate("/dashboard");
         }
       } else {
         toast({
@@ -97,10 +97,10 @@ const Login = () => {
         position: "top-right",
       });
 
-      if (!response.user?.emailVerified) {
-        navigate("/verify-email", { state: { email } });
+      if (!response.userEmailVerified) {
+        navigate("/auth/verify-email", { state: { email } });
       } else {
-        navigate("/home");
+        navigate("/dashboard");
       }
     } catch (error) {
       toast({
@@ -200,6 +200,7 @@ const Login = () => {
             <div className="flex gap-4 items-center justify-center">
               <GoogleLogin
                 onSuccess={handleGoogleLogin}
+                disabled={loading}  
                 onError={() => {
                   toast({
                     title: "Google Login Failed",

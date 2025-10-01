@@ -60,20 +60,21 @@ const SignUp = () => {
 
       if (result.success) {
         toast({
-          title: "Login Successful",
-          description: "You have successfully logged in with Google.",
+          title: "Sign Up Successful",
+          description: "You have successfully signed with your Google account.",
           status: "success",
           duration: 3000,
           isClosable: true,
           position: "top-right",
         });
 
-        if (!result.user?.emailVerified) {
+        console.log(result)
+        if (!result.userEmailVerified) {
           navigate("/auth/verify-email", {
             state: { email: result.user.email },
           });
         } else {
-          navigate("/home");
+          navigate("/dashboard");
         }
       } else {
         toast({
@@ -86,9 +87,9 @@ const SignUp = () => {
         });
       }
     } catch (error) {
-      console.error("Google login error:", error);
+      console.error("Google signup error:", error);
       toast({
-        title: "Google Login Failed",
+        title: "Google Signup Failed",
         description: "Please try again later.",
         status: "error",
         duration: 3000,
@@ -270,6 +271,7 @@ const SignUp = () => {
             <div className="flex gap-4 items-center justify-center">
               <GoogleLogin
                 onSuccess={handleGoogleLogin}
+                text="sign Up with Google"
                 onError={() => {
                   toast({
                     title: "Google Login Failed",

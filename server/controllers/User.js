@@ -260,3 +260,24 @@ export const SignInUserWithGoogle = async (req, res) => {
       .json({ message: "Internal server error during Google Sign-In" });
   }
 };
+
+export const LogoutUser = async (req, res) => {
+  try {
+    res.clearCookie("tradecompanion_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", 
+      sameSite: "strict",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Logout failed",
+    });
+  }
+};

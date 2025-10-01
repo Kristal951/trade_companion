@@ -25,15 +25,18 @@ const useAuthStore = create(
 
           if (res.data.success) {
             set({
-              user: null,
-              isAuthenticated: true,
+              user: res.data.user || null,
+              isAuthenticated: !!res.data.user,
               error: false,
               errorMsg: "",
             });
             return { success: true };
           }
         } catch (err) {
-          const message = err.response?.data?.error || err.message;
+          const message =
+            err.response?.data?.error ||
+            err.response?.data?.message ||
+            err.message;
           set({ error: true, errorMsg: message });
           return { success: false, message };
         } finally {
@@ -52,7 +55,7 @@ const useAuthStore = create(
           );
 
           if (paymentMethod === "stripe") {
-            window.location.href = res.data.url; // redirect to Stripe
+            window.location.href = res.data.url;
           } else {
             alert(
               `Bank Transfer Selected:\n\nSend payment to:\n${res.data.bankDetails.accountName}\n${res.data.bankDetails.bankName}\nAcct: ${res.data.bankDetails.accountNumber}\nRef: ${res.data.bankDetails.reference}`
@@ -112,7 +115,7 @@ const useAuthStore = create(
             errorMsg: "",
           });
 
-          return { success: true };
+          return { success: true, userEmailVerified: data.user?.emailVerified };
         } catch (error) {
           const message = error.response?.data?.message || error.message;
           set({ error: true, errorMsg: message });
@@ -139,7 +142,7 @@ const useAuthStore = create(
             errorMsg: "",
           });
 
-          return { success: true };
+          return { success: true , userEmailVerified: data.user?.emailVerified};
         } catch (error) {
           const message = error.response?.data?.message || error.message;
           set({ error: true, errorMsg: message });
@@ -149,13 +152,18 @@ const useAuthStore = create(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await axios.post(
+            `${Backend_Uri}/api/user/logout`,
+            {},
+            { withCredentials: true }
+          );
+        } catch (err) {
+          console.error("Logout error:", err);
+        }
         set({ isAuthenticated: false, user: null });
-        axios.post(
-          `${Backend_Uri}/api/user/logout`,
-          {},
-          { withCredentials: true }
-        );
+        sessionStorage.clear();
       },
     }),
     {
